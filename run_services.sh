@@ -1,5 +1,5 @@
 #!/bin/bash
-# THM Pipeline: run orchestrator + control API in parallel
+# THM Pipeline: run orchestrator + control API + 24/7 radio in parallel
 set -u
 export PYTHONUNBUFFERED=1
 cd /app
@@ -10,5 +10,15 @@ cd /app
 # 2) Upload retry watchdog (background, keeps retrying until quota opens)
 ( cd services/uploader && exec python3 -u retry_watchdog.py ) &
 
-# 3) Main orchestrator cron loop (foreground-ish)
+# 3) 24/7 Radio - Lofi/Study (if stream key available)
+if [ -n "${YOUTUBE_STREAM_KEY_LOFI:-}" ]; then
+  ( exec python3 -u services/radio/live_radio.py --channel lofi --stream-key "$YOUTUBE_STREAM_KEY_LOFI" --port 8001 ) &
+fi
+
+# 4) 24/7 Radio - World Lounge (if stream key available)
+if [ -n "${YOUTUBE_STREAM_KEY_WORLD:-}" ]; then
+  ( exec python3 -u services/radio/live_radio.py --channel world --stream-key "$YOUTUBE_STREAM_KEY_WORLD" --port 8002 ) &
+fi
+
+# 5) Main orchestrator cron loop (foreground-ish)
 exec python3 -u services/orchestrator/main.py

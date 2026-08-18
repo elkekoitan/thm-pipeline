@@ -20,4 +20,7 @@ COPY services /app/services
 RUN mkdir -p /data/{music,video,assets,playlists,logs,state,uploads,research,covers}
 
 ENTRYPOINT ["tini", "--"]
-CMD ["python3", "/app/services/orchestrator/main.py"]
+COPY run_services.sh /app/
+RUN chmod +x /app/run_services.sh
+EXPOSE 8000
+CMD ["/app/run_services.sh"]

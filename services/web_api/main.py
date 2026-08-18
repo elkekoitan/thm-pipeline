@@ -32,8 +32,11 @@ def _run_async(cmd, workdir):
     def target():
         env = os.environ.copy()
         env["PYTHONUNBUFFERED"] = "1"
+        log_dir = os.path.join(DATA_DIR, "logs")
+        os.makedirs(log_dir, exist_ok=True)
+        log_file = os.path.join(log_dir, "cmd.log")
         subprocess.run(cmd, cwd=workdir, env=env,
-                       stdout=open("/data/logs/cmd.log", "a"),
+                       stdout=open(log_file, "a"),
                        stderr=subprocess.STDOUT)
     threading.Thread(target=target, daemon=True).start()
 
